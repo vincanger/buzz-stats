@@ -1,5 +1,5 @@
 datasource db {
-  provider = "sqlite"
+  provider = "postgresql"
   // Wasp requires that the url is set to the DATABASE_URL environment variable.
   url      = env("DATABASE_URL")
 }
@@ -27,4 +27,41 @@ model NostrChallenge {
   createdAt DateTime  @default(now())
   expiresAt DateTime
   usedAt    DateTime?
+}
+
+// Raw nostr events synced from the Buzz relay by the bot key. Stats are
+// aggregated from these rather than live relay queries, so history survives
+// relay retention and dashboards stay fast.
+model RelayEvent {
+  id        String   @id // nostr event id (hex)
+  kind      Int
+  pubkey    String
+  createdAt DateTime // the event's created_at
+  channelId String? // NIP-29 `h` tag
+  content   String
+  tags      String // JSON-encoded nostr tags array
+  syncedAt  DateTime @default(now())
+
+  @@index([kind, createdAt])
+  @@index([pubkey, createdAt])
+  @@index([channelId])
+}
+
+// Relay members (humans and agents), built from kind-0 profiles and the
+// relay's membership events. isAgent comes from the roster's Bot role or the
+// AGENT_PUBKEYS env override.
+model Member {
+  pubkey    String   @id
+  name      String?
+  picture   String?
+  role      String?
+  isAgent   Boolean  @default(false)
+  updatedAt DateTime @updatedAt
+}
+
+// Single-row watermark for incremental sync.
+model SyncCursor {
+  id         Int       @id @default(autoincrement())
+  lastSeenAt DateTime?
+  updatedAt  DateTime  @updatedAt
 }

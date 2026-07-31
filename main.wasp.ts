@@ -1,10 +1,19 @@
-import { api, app, page, route } from "@wasp.sh/spec";
+import { action, api, app, job, page, query, route } from "@wasp.sh/spec";
 import { MainPage } from "./src/MainPage" with { type: "ref" };
 import { LoginPage } from "./src/auth/LoginPage" with { type: "ref" };
 import {
   getNostrChallenge,
   verifyNostrLogin,
 } from "./src/auth/nostr/serverApi" with { type: "ref" };
+import {
+  getMemberLeaderboard,
+  getMyStats,
+  getOverview,
+} from "./src/stats/queries" with { type: "ref" };
+import { syncNow } from "./src/sync/actions" with { type: "ref" };
+import { syncBuzzRelay } from "./src/sync/syncRelay" with { type: "ref" };
+
+const STATS_ENTITIES = ["RelayEvent", "Member", "SyncCursor"];
 
 export default app({
   name: "buzzStats",
@@ -33,5 +42,14 @@ export default app({
       entities: ["NostrChallenge", "User"],
       auth: false,
     }),
+    job(syncBuzzRelay, {
+      executor: "PgBoss",
+      schedule: { cron: "*/10 * * * *" },
+      entities: STATS_ENTITIES,
+    }),
+    action(syncNow, { entities: STATS_ENTITIES }),
+    query(getOverview, { entities: STATS_ENTITIES }),
+    query(getMemberLeaderboard, { entities: ["RelayEvent", "Member"] }),
+    query(getMyStats, { entities: ["RelayEvent", "Member"] }),
   ],
 });
