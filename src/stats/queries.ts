@@ -46,6 +46,36 @@ function parseTags(event: StoredEvent): string[][] {
   }
 }
 
+/**
+ * Token-usage reports published by the Claude Code Stop hook
+ * (scripts/claude-token-hook.mjs): kind-9 events tagged ["t","token-usage"]
+ * with a JSON body. They're metrics, not conversation — excluded from all
+ * message counts.
+ */
+function isTokenUsageEvent(event: StoredEvent): boolean {
+  return (
+    MESSAGE_KINDS.includes(event.kind) &&
+    parseTags(event).some((t) => t[0] === "t" && t[1] === "token-usage")
+  );
+}
+
+/** New tokens the agent burned (input + output; cache reads excluded). */
+function tokensOf(event: StoredEvent): number {
+  try {
+    const body = JSON.parse(event.content) as {
+      input?: number;
+      output?: number;
+    };
+    return (body.input ?? 0) + (body.output ?? 0);
+  } catch {
+    return 0;
+  }
+}
+
+function isChatMessage(event: StoredEvent): boolean {
+  return MESSAGE_KINDS.includes(event.kind) && !isTokenUsageEvent(event);
+}
+
 function mentionedPubkeys(event: StoredEvent): string[] {
   return parseTags(event)
     .filter((t) => t[0] === "p" && /^[0-9a-f]{64}$/i.test(t[1] ?? ""))
@@ -92,6 +122,7 @@ export type Overview = {
   messagesInPeriod: number;
   tasksCompletedInPeriod: number;
   jobRequestsInPeriod: number;
+  tokensInPeriod: number;
   activeAgents: { pubkey: string; name: string | null }[];
   lastSyncedAt: string | null;
 };
@@ -136,11 +167,13 @@ export const getOverview: GetOverview<void, Overview> = async (
     periodDays: STATS_PERIOD_DAYS,
     memberCount: members.length,
     agentCount: agentPubkeys.size,
-    messagesInPeriod: events.filter((e) => MESSAGE_KINDS.includes(e.kind))
-      .length,
+    messagesInPeriod: events.filter(isChatMessage).length,
     tasksCompletedInPeriod: events.filter(isCompletedWorkflowEvent).length,
     jobRequestsInPeriod: events.filter((e) => e.kind === JOB_REQUEST_KIND)
       .length,
+    tokensInPeriod: events
+      .filter(isTokenUsageEvent)
+      .reduce((sum, e) => sum + tokensOf(e), 0),
     activeAgents,
     lastSyncedAt: cursor?.lastSeenAt?.toISOString() ?? null,
   };
@@ -155,6 +188,7 @@ export type LeaderboardRow = {
   reactionsGiven: number;
   mentionsReceived: number;
   threadsStarted: number;
+  tokensUsed: number;
 };
 
 export const getMemberLeaderboard: GetMemberLeaderboard<
@@ -186,13 +220,16 @@ export const getMemberLeaderboard: GetMemberLeaderboard<
         reactionsGiven: 0,
         mentionsReceived: 0,
         threadsStarted: 0,
+        tokensUsed: 0,
       });
     }
     return rows.get(pubkey)!;
   };
 
   for (const event of events) {
-    if (MESSAGE_KINDS.includes(event.kind)) {
+    if (isTokenUsageEvent(event)) {
+      rowFor(event.pubkey).tokensUsed += tokensOf(event);
+    } else if (MESSAGE_KINDS.includes(event.kind)) {
       rowFor(event.pubkey).messages++;
       for (const mentioned of mentionedPubkeys(event)) {
         rowFor(mentioned).mentionsReceived++;
@@ -247,7 +284,7 @@ export const getMyStats: GetMyStats<void, MyStats> = async (
   );
   const mentionCounts = new Map<string, number>();
   for (const event of myEvents) {
-    if (!MESSAGE_KINDS.includes(event.kind)) continue;
+    if (!isChatMessage(event)) continue;
     for (const mentioned of mentionedPubkeys(event)) {
       if (!agentByPubkey.has(mentioned)) continue;
       mentionCounts.set(mentioned, (mentionCounts.get(mentioned) ?? 0) + 1);
@@ -256,8 +293,7 @@ export const getMyStats: GetMyStats<void, MyStats> = async (
 
   return {
     pubkey,
-    messagesInPeriod: myEvents.filter((e) => MESSAGE_KINDS.includes(e.kind))
-      .length,
+    messagesInPeriod: myEvents.filter(isChatMessage).length,
     threadsStarted: myEvents.filter((e) => e.kind === FORUM_POST_KIND).length,
     invokedAgents: [...mentionCounts.entries()]
       .map(([agentPubkey, mentions]) => ({

@@ -85,6 +85,10 @@ export function MainPage({ user }: { user: AuthUser }) {
               label={`Job requests (${overview.data.periodDays}d)`}
               value={overview.data.jobRequestsInPeriod}
             />
+            <StatCard
+              label={`Agent tokens (${overview.data.periodDays}d)`}
+              value={overview.data.tokensInPeriod}
+            />
           </section>
           <p style={{ fontSize: "0.85rem", color: "#666" }}>
             {overview.data.activeAgents.length > 0
@@ -129,6 +133,7 @@ export function MainPage({ user }: { user: AuthUser }) {
                   <th>Reactions</th>
                   <th>Mentions received</th>
                   <th>Threads started</th>
+                  <th>Tokens</th>
                 </tr>
               </thead>
               <tbody>
@@ -140,6 +145,7 @@ export function MainPage({ user }: { user: AuthUser }) {
                     <td>{row.reactionsGiven}</td>
                     <td>{row.mentionsReceived}</td>
                     <td>{row.threadsStarted}</td>
+                    <td>{row.tokensUsed > 0 ? row.tokensUsed.toLocaleString() : "—"}</td>
                   </tr>
                 ))}
               </tbody>
