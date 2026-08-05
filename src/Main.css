@@ -6,98 +6,298 @@
   padding: 0;
 }
 
+:root {
+  --bg: #f2f0eb;
+  --surface: #faf9f6;
+  --ink: #17160f;
+  --muted: #7a766b;
+  --hairline: #dfdcd2;
+  --yellow: #f2c245;
+  --lavender: #d9c8f5;
+  --purple: #6a4fd8;
+  --mono:
+    "JetBrains Mono", ui-monospace, "SF Mono", Menlo, Consolas, monospace;
+}
+
 body {
+  background: var(--bg);
+  color: var(--ink);
   font-family:
-    -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Oxygen", "Ubuntu",
-    "Cantarell", "Fira Sans", "Droid Sans", "Helvetica Neue", sans-serif;
-}
-
-#root {
-  min-height: 100vh;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-}
-
-.container {
-  margin: 3rem 3rem 10rem 3rem;
-  max-width: 726px;
-  display: flex;
-  flex-direction: column;
-  justify-content: center;
-  align-items: center;
-  text-align: center;
-}
-
-.logo {
-  max-height: 200px;
-  margin-bottom: 1rem;
-}
-
-.title {
-  font-size: 4rem;
-  font-weight: 700;
-  margin-bottom: 1rem;
-}
-
-.content {
-  font-size: 1.2rem;
-  font-weight: 400;
-  line-height: 2;
-  margin-bottom: 3rem;
-}
-
-.buttons {
-  display: flex;
-  flex-direction: row;
-  gap: 1rem;
-}
-
-.button {
-  font-size: 1.2rem;
-  font-weight: 700;
-  text-decoration: none;
-  padding: 1.2rem 1.5rem;
-  border-radius: 10px;
-}
-
-.button-filled {
-  color: black;
-  background-color: #ffcc00;
-  border: 2px solid #ffcc00;
-
-  transition: all 0.2s ease-in-out;
-}
-
-.button-filled:hover {
-  filter: brightness(0.95);
-}
-
-.button-outlined {
-  color: black;
-  background-color: transparent;
-  border: 2px solid #ffcc00;
-
-  transition: all 0.2s ease-in-out;
-}
-
-.button-outlined:hover {
-  filter: brightness(0.95);
+    -apple-system, BlinkMacSystemFont, "Segoe UI", "Roboto", "Helvetica Neue",
+    sans-serif;
+  line-height: 1.5;
 }
 
 code {
-  border-radius: 5px;
-  border: 1px solid #ffcc00;
-  padding: 0.2rem;
-  background: #ffcc0044;
-  font-family:
-    Menlo,
-    Monaco,
-    Lucida Console,
-    Liberation Mono,
-    DejaVu Sans Mono,
-    Bitstream Vera Sans Mono,
-    Courier New,
-    monospace;
+  font-family: var(--mono);
+}
+
+.page {
+  max-width: 60rem;
+  margin: 0 auto;
+  padding: 2.5rem 1.25rem 5rem;
+}
+
+/* ---------- header ---------- */
+
+.topbar {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  gap: 1rem;
+  flex-wrap: wrap;
+  margin-bottom: 2.5rem;
+}
+
+.logo {
+  font-family: var(--mono);
+  font-weight: 800;
+  font-size: 1.35rem;
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.logo mark {
+  background: var(--yellow);
+  color: var(--ink);
+  padding: 0.05em 0.25em;
+}
+
+.topbar-actions {
+  display: flex;
+  gap: 0.6rem;
+  align-items: center;
+  flex-wrap: wrap;
+}
+
+.pubkey {
+  font-family: var(--mono);
+  font-size: 0.75rem;
+  color: var(--muted);
+  background: none;
+  border: none;
+  padding: 0;
+}
+
+/* ---------- buttons ---------- */
+
+.btn {
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  cursor: pointer;
+  background: var(--yellow);
+  color: var(--ink);
+  border: 2px solid var(--ink);
+  padding: 0.45rem 1rem;
+  box-shadow: 2px 2px 0 var(--ink);
+  transition: box-shadow 0.1s ease, transform 0.1s ease;
+}
+
+.btn:hover {
+  transform: translate(1px, 1px);
+  box-shadow: 1px 1px 0 var(--ink);
+}
+
+.btn:active {
+  transform: translate(2px, 2px);
+  box-shadow: 0 0 0 var(--ink);
+}
+
+.btn:disabled {
+  opacity: 0.6;
+  cursor: default;
+}
+
+.btn-ghost {
+  background: var(--surface);
+}
+
+/* ---------- stat cards (shared-border ledger grid) ---------- */
+
+.cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fit, minmax(9.5rem, 1fr));
+  border-top: 2px solid var(--ink);
+  border-left: 1px solid var(--hairline);
+  margin: 1.5rem 0 1rem;
+  background: var(--surface);
+}
+
+.card {
+  padding: 1rem 1rem 1.1rem;
+  border-right: 1px solid var(--hairline);
+  border-bottom: 1px solid var(--hairline);
+}
+
+.card-label {
+  font-family: var(--mono);
+  font-size: 0.68rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+}
+
+.card-value {
+  font-family: var(--mono);
+  font-size: 1.9rem;
+  font-weight: 300;
+  letter-spacing: -0.02em;
+  font-variant-numeric: tabular-nums;
+  margin-top: 0.3rem;
+}
+
+.card-hi .card-value {
+  background: var(--yellow);
+  display: inline-block;
+  padding: 0 0.25em;
+  font-weight: 400;
+}
+
+/* ---------- meta line / status ---------- */
+
+.meta {
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  color: var(--muted);
+  margin-bottom: 2rem;
+}
+
+.meta b {
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.sync-note {
+  font-family: var(--mono);
+  font-size: 0.78rem;
+  background: var(--lavender);
+  border: 1px solid var(--ink);
+  padding: 0.4rem 0.7rem;
+  margin-bottom: 1rem;
+  display: inline-block;
+}
+
+/* ---------- sections ---------- */
+
+section h2 {
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.12em;
+  margin: 2.25rem 0 0.75rem;
+}
+
+section h2::before {
+  content: "// ";
+  color: var(--purple);
+}
+
+/* ---------- table ---------- */
+
+.tablewrap {
+  overflow-x: auto;
+  background: var(--surface);
+}
+
+table {
+  width: 100%;
+  border-collapse: collapse;
+}
+
+th {
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  color: var(--muted);
+  text-align: left;
+  padding: 0.55rem 0.7rem;
+  border-bottom: 2px solid var(--ink);
+  white-space: nowrap;
+}
+
+td {
+  padding: 0.55rem 0.7rem;
+  font-size: 0.88rem;
+  border-bottom: 1px solid var(--hairline);
+  white-space: nowrap;
+}
+
+th.num,
+td.num {
+  text-align: right;
+  font-variant-numeric: tabular-nums;
+  font-family: var(--mono);
+  font-size: 0.82rem;
+}
+
+.chip {
+  font-family: var(--mono);
+  font-size: 0.66rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+
+.chip-agent {
+  color: var(--ink);
+  background: var(--yellow);
+  padding: 0.1rem 0.4rem;
+}
+
+.empty {
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  color: var(--muted);
+  padding: 0.75rem 0;
+}
+
+[role="alert"] {
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  color: #a4321f;
+}
+
+/* ---------- login ---------- */
+
+.login {
+  max-width: 30rem;
+  margin: 18vh auto 0;
+  padding: 0 1.25rem;
+  text-align: center;
+}
+
+.login .logo {
+  font-size: 1.7rem;
+  margin-bottom: 1rem;
+}
+
+.login-tagline {
+  color: var(--muted);
+  margin-bottom: 2rem;
+  text-wrap: balance;
+}
+
+.login .btn {
+  font-size: 0.9rem;
+  padding: 0.7rem 1.4rem;
+}
+
+.login-status {
+  font-family: var(--mono);
+  font-size: 0.8rem;
+  margin-top: 1.25rem;
+  min-height: 1.5rem;
+}
+
+.login-hint {
+  font-size: 0.82rem;
+  color: var(--muted);
+  margin-top: 1.5rem;
 }

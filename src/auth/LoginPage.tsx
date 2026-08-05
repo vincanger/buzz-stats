@@ -5,6 +5,7 @@ import {
 } from "nostr-login";
 import { useEffect, useRef, useState } from "react";
 import { api, handleApiError, setSessionId } from "wasp/client/api";
+import "../Main.css";
 
 /** NIP-42-style client auth event, verified server-side. */
 const AUTH_EVENT_KIND = 22242;
@@ -248,31 +249,26 @@ export function LoginPage() {
   }
 
   return (
-    <main
-      style={{
-        maxWidth: "28rem",
-        margin: "20vh auto 0",
-        textAlign: "center",
-        fontFamily: "system-ui, sans-serif",
-      }}
-    >
-      <h1>Buzz Stats</h1>
-      <p>
+    <main className="login">
+      <h1 className="logo">
+        Buzz <mark>Stats</mark>
+      </h1>
+      <p className="login-tagline">
         Stats for your Buzz relay: agent tasks, member activity, and who's
         working with whom.
       </p>
       <button
+        className="btn"
         onClick={() => void onSignInClick()}
         disabled={status.kind === "working"}
-        style={{ padding: "0.75rem 1.5rem", fontSize: "1rem" }}
       >
         Sign in with Nostr (Buzz)
       </button>
-      <p aria-live="polite">
+      <p className="login-status" aria-live="polite">
         {status.kind === "working" && status.message}
         {status.kind === "error" && <span role="alert">{status.message}</span>}
       </p>
-      <p style={{ fontSize: "0.85rem", color: "#666" }}>
+      <p className="login-hint">
         New to Nostr? Choose “Sign up” in the dialog and an identity will be
         created for you — no extension needed.
       </p>

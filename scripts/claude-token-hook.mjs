@@ -3,8 +3,7 @@
  * as a nostr event, signed with the agent's own key — so buzz-stats can chart
  * tokens per agent.
  *
- * Install in the agent's Claude Code settings (~/.claude/settings.json or the
- * project's .claude/settings.json):
+ * Install location: ~/.buzz/.claude/settings.json 
  *
  *   {
  *     "hooks": {
